@@ -2,6 +2,8 @@ import React, {Component} from "react";
 import { FormContact } from "./FormContact/FormContact";
 import { Filter } from "./Filter/Filter";
 import { nanoid } from 'nanoid';
+import { ContactList } from "./ContactList/ContactList";
+import { Container, TitleOne, TitleTwo } from "./App.styled";
 
 const initialStates =  
 [
@@ -18,10 +20,23 @@ export class App extends Component {
     filter: '',
   }
 
+  deleteContact = (id) => {
+    this.setState(prevState => ({
+      contacts: prevState.contacts.filter(contact => contact.id !== id),
+    }));
+  }
+
   listenerForm = (data) => {
-    const newContact = { id:nanoid(), name: data.name, number: data.number };
-    this.setState((prevState) => ({
-      contacts: [ newContact, ...prevState.contacts],
+    const {contacts} = this.state
+    const isExist = contacts.some(
+      ({ name }) => name.toLowerCase() === data.name.toLowerCase()
+    );
+    if(isExist){
+      alert(`${data.name} is already in contacts.`)
+      return
+    }
+      this.setState((prevState) => ({
+        contacts: [ {...data, id: nanoid()}, ...prevState.contacts],
     }));
   };
 
@@ -38,18 +53,16 @@ export class App extends Component {
   render (){
     const filteredContacts = this.getVisibleContacts();
     return (
-      <div>
+      <Container>
+        <TitleOne>Phonebook</TitleOne>
         <FormContact onSubmit={this.listenerForm}/>
         <Filter value={this.filter} onChange={this.changeFilter}/>
-        <div>
-          <h2>Contacts</h2>
-          <ul>
-          {filteredContacts.map((contact, id) => (
-            <li key={id}>{contact.name}: {contact.number}</li>
-          ))}
-        </ul>
-        </div>
-      </div>
+          <TitleTwo>Contacts</TitleTwo>
+          <ContactList
+            contacts={filteredContacts}
+            deleteContact={this.deleteContact}
+          />
+      </Container>
     );
   };
 };
